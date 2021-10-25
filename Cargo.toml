@@ -2,7 +2,7 @@
 name = "ku"
 version = "0.1.0"
 edition = "2018"
-license = "MIT"
+authors = ["edave64"]
 license-file = "LICENCE"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -15,7 +15,4 @@ opt-level = 3
 lto = true
 
 [dependencies]
-ncurses = "5.101.0"
-bit-vec = "0.6"
-regex = "1.5.4"
 clap = "2.33.3"
