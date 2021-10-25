@@ -14,7 +14,7 @@ impl PredictorBoard {
 
         fn mask (val: u8) -> u16 {
             if val == 0 { return 0 };
-            return 1 << (val - 1);
+            1 << (val - 1)
         }
 
         let mut out_mask: u16 = 0;
@@ -30,7 +30,7 @@ impl PredictorBoard {
             out_mask |= mask(col_val) | mask(row_val) | mask(block_val);
         }
 
-        return (1..10).into_iter().filter(|&x| (out_mask & mask(x)) == 0).collect();
+        (1..10).into_iter().filter(|&x| (out_mask & mask(x)) == 0).collect()
     }
 
     fn set(&mut self, i: u8, val: u8) {

@@ -17,7 +17,7 @@ impl IntoIterator for Row {
 
     fn into_iter(self) -> Self::IntoIter {
         let start = start_of_row(self).0;
-        (start..(start + 9)).into_iter().map(|x| Cell(x)).collect::<Vec<Cell>>().into_iter()
+        (start..(start + 9)).into_iter().map(Cell).collect::<Vec<Cell>>().into_iter()
     }
 }
 
@@ -78,7 +78,7 @@ impl fmt::Display for Cell {
         if self.0 > 80 {
             write!(f, "Cell[Impossible Position]")
         } else {
-            write!(f, "Cell[Col: {}, Row: {}]", col_of(self.clone()).0, row_of(self.clone()).0)
+            write!(f, "Cell[Col: {}, Row: {}]", col_of(*self).0, row_of(*self).0)
         }
     }
 }

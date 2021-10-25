@@ -75,18 +75,18 @@ fn print_stats(headline: &str, collection: Vec<usize>) {
     println!("min: {} bytes", collection.iter().min().unwrap());
 }
 
-fn average(numbers: &Vec<usize>) -> f32 {
+fn average(numbers: &[usize]) -> f32 {
     numbers.iter().sum::<usize>() as f32 / numbers.len() as f32
 }
 
-fn median(numbers: &Vec<usize>) -> i32 {
+fn median(numbers: &[usize]) -> i32 {
     let mut clone = numbers.to_owned();
-    clone.sort();
+    clone.sort_unstable();
     let mid = numbers.len() / 2;
     clone[mid] as i32
 }
 
-fn mode(numbers: &Vec<usize>) -> i32 {
+fn mode(numbers: &[usize]) -> i32 {
     let mut occurrences = HashMap::new();
 
     for &value in numbers {

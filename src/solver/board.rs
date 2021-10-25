@@ -34,10 +34,10 @@ impl Board {
     pub fn from_puzzle(fields: Vec<u8>) -> Result<Self, UnsolvableError> {
         let mut board = Board::new();
 
-        for i in 0..81usize {
-            let given = fields[i];
+        for (i, &given) in fields.iter().enumerate() {
             if given != 0 {
-                if let Err(_) = board.mark(Cell((i) as u8), given - 1) {
+                let mark_err = board.mark(Cell((i) as u8), given - 1).is_err();
+                if mark_err {
                     return Err(UnsolvableError {})
                 }
             }
@@ -49,7 +49,7 @@ impl Board {
     pub fn to_1d_string (&self) -> String {
         let mut a = String::new();
 
-        for i in 0..(81 as usize) {
+        for i in 0..81 {
             let val = self.state[i];
             if let Solved(num) = val {
                 a.push_str(&*format!("{}", num + 1));
@@ -67,7 +67,7 @@ impl Board {
         let mut most_certain = 255u8;
         let mut most_certain_count = 255u8;
 
-        for i in 0..(81 as usize) {
+        for i in 0..81 {
             if let Unsolved(possibilities) = self.state[i] {
                 if most_certain_count > possibilities.count {
                     most_certain_count = possibilities.count;
@@ -126,7 +126,7 @@ impl Board {
     pub fn mark_of_cells<T: Iterator<Item=Cell>>(&mut self, mask_off: u16, iter: T) -> Result<(), ()> {
         for same_row_cell in iter {
             if let Unsolved(mut row_possibilities) = self.state[same_row_cell.0 as usize] {
-                row_possibilities.mask = row_possibilities.mask & mask_off;
+                row_possibilities.mask &= mask_off;
                 row_possibilities.count = row_possibilities.mask.count_ones() as u8;
                 if row_possibilities.count == 0 {
                     return Err(());
@@ -150,7 +150,7 @@ impl fmt::Display for Board {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for y in 0..9u8 {
             if y == 3 || y == 6 {
-                write!(f, "---+---+---\n")?;
+                writeln!(f, "---+---+---")?;
             }
             for x in 0..9u8 {
                 if x == 3 || x == 6 {

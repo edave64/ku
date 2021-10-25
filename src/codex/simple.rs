@@ -1,10 +1,8 @@
-use std::vec::IntoIter;
 use std::iter::Peekable;
 
 #[allow(dead_code)]
 pub fn encode(string: &str) -> Vec<u8> {
-    let nums: Vec<u8> = string.chars().map( |x| x.to_digit(10).unwrap() as u8).collect();
-    let mut iter = nums.into_iter().peekable();
+    let mut iter = string.chars().map( |x| x.to_digit(10).unwrap() as u8).into_iter().peekable();
 
     let mut ret: Vec<u8> = vec![];
 
@@ -26,7 +24,7 @@ pub fn encode(string: &str) -> Vec<u8> {
     ret
 }
 
-fn encode_single(iter: &mut Peekable<IntoIter<u8>>) -> Option<u8> {
+fn encode_single<T: Iterator<Item=u8>>(iter: &mut Peekable<T>) -> Option<u8> {
     let num = iter.next();
     match num {
         None => None,
@@ -76,7 +74,7 @@ pub fn decode(coded: Vec<u8>) -> String {
     fn push_nibble (ret: &mut String, nibble: u8) {
         match nibble {
             0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 => ret.push_str(&*format!("{}", nibble)),
-            x => ret.push_str(&*format!("{}", "0".repeat((x - 8) as usize)))
+            x => ret.push_str("0".repeat((x - 8) as usize).as_str())
         }
     }
 
