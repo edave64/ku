@@ -83,6 +83,16 @@ impl Board {
         }
     }
 
+    pub fn first_unsolved(&self) -> Option<Cell> {
+        for i in 0..81 {
+            if let Unsolved(possibilities) = self.state[i] {
+                return Some(Cell(i as u8));
+            }
+        }
+
+        None
+    }
+
     pub fn mark(&mut self, cell: Cell, val: u8) -> Result<u8, ContradicoryAssignmentError> {
         assert!(val <= 8);
         let current_val = self.state[cell.0 as usize];
