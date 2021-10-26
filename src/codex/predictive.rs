@@ -1,3 +1,5 @@
+use crate::tools::BitWriter;
+
 struct PredictorBoard {
     board: [u8; 81],
 }
@@ -65,7 +67,7 @@ pub fn encode(string: &str) -> Vec<u8> {
         board: [0u8; 81]
     };
 
-    let mut acc = vec![];
+    let mut writer = BitWriter::new();
 
     for i in 0..81 {
         let real_i = pattern_linear(i);
@@ -74,10 +76,10 @@ pub fn encode(string: &str) -> Vec<u8> {
         let idx = probabilies.iter().position(|&x| x == num).expect("Impossible puzzle to encode") as u8;
 
         match probabilies.len() {
-            9 => acc.push((4u8, idx)),
-            5..=8 => acc.push((3u8, idx)),
-            3 | 4 => acc.push((2u8, idx)),
-            2 => acc.push((1u8, idx)),
+            9 => writer.write(4, idx),
+            5..=8 => writer.write(3, idx),
+            3 | 4 => writer.write(2, idx),
+            2 => writer.write(1, idx),
             1 => {},
             _ => panic!("Encoding of broken puzzle!")
         }
@@ -85,25 +87,7 @@ pub fn encode(string: &str) -> Vec<u8> {
         board.set(real_i, num);
     }
 
-    let mut bit_collector = 0u16;
-    let mut bit_position = 0u8;
-
-    let mut ret: Vec<u8> = vec![];
-
-    for (bit_lenght, number) in acc {
-        bit_collector |= (number as u16) << (16 - bit_lenght - bit_position);
-        bit_position += bit_lenght;
-        if bit_position >= 8 {
-            ret.push(((bit_collector & 0xFF00) >> 8) as u8);
-            bit_collector <<= 8;
-            bit_position -= 8;
-        }
-    }
-    if bit_position > 0 {
-        ret.push(((bit_collector & 0xFF00) >> 8) as u8);
-    }
-
-    ret
+    writer.disolve()
 }
 
 pub fn decode(coded: Vec<u8>) -> String {
