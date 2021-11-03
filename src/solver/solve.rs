@@ -1,6 +1,5 @@
 use crate::errors::{NonUniqueError};
 use crate::solver::board::Board;
-use crate::solver::board::CellState::{Solved, Unsolved};
 use crate::solver::calc::number_to_mask;
 
 pub fn solve(board: Board, prove_unique: bool) -> Result<Option<Board>, NonUniqueError> {
@@ -14,9 +13,7 @@ pub fn solve(board: Board, prove_unique: bool) -> Result<Option<Board>, NonUniqu
                 let marking = new_board.mark(next_cell, i);
                 if marking.is_err() { continue; }
 
-                let sub_ret = solve(new_board, prove_unique)?;
-
-                match sub_ret {
+                match solve(new_board, prove_unique)? {
                     Some(solved_board) => {
                         if !prove_unique {
                             return Ok(Some(solved_board));
