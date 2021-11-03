@@ -61,17 +61,40 @@ impl Board {
         a
     }
 
-    // Returns the first unsolved cell with the least remaining possible values
-    // If the board does not contain any unsolved cells,
-    pub fn most_certain(&self) -> Option<Cell> {
+    pub fn to_nums (&self) -> Vec<u8> {
+        let mut a = Vec::new();
+
+        for i in 0..81 {
+            let val = self.state[i];
+            if let Solved(num) = val {
+                a.push(num + 1);
+            } else {
+                a.push(0);
+            }
+        }
+
+        a
+    }
+
+    // Returns the first unsolved cell with the least remaining possible values, and its
+    // possible values
+    // If the board does not contain any unsolved cells, it returns None
+    // (Returning the possibilities here helps ensure the caller doesn't have to handle situations
+    // that we have already proven impossible)
+    pub fn most_certain(&self) -> Option<(Cell, Possibilities)> {
         let mut most_certain = 255u8;
         let mut most_certain_count = 255u8;
+        let mut ret_possibilities = Possibilities {
+            count: 0,
+            mask: 0,
+        };
 
         for i in 0..81 {
             if let Unsolved(possibilities) = self.state[i] {
                 if most_certain_count > possibilities.count {
                     most_certain_count = possibilities.count;
                     most_certain = i as u8;
+                    ret_possibilities = possibilities;
                 }
             }
         }
@@ -79,7 +102,7 @@ impl Board {
         if most_certain == 255 {
             None
         } else {
-            Some(Cell(most_certain))
+            Some((Cell(most_certain), ret_possibilities))
         }
     }
 
