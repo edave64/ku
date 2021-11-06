@@ -1,16 +1,23 @@
+use std::collections::HashMap;
 use std::error::Error;
+use std::fs::File;
+use std::io;
+use std::io::BufRead;
+use std::path::Path;
 use clap::{App, Arg, ArgMatches, SubCommand};
 use crate::errors::{InvalidPuzzleError, UnsolvableError};
 use crate::solver::board::Board;
 use crate::solver::solve::solve;
+use crate::codex::{predictive,simple};
+
 
 pub fn register_command<'a> (app: App<'a, 'a>) -> App<'a, 'a> {
     app.subcommand(SubCommand::with_name("encode")
         .about("Encodes a puzzle in a smaller format for easier exchange")
-        .arg(Arg::with_name("puzzles")
+        /*.arg(Arg::with_name("puzzles")
             .required(true)
             .multiple(true)
-            .help("ASD"))
+            .help("ASD"))*/
         .arg(Arg::with_name("unambiguous")
             .short("u")
             .long("unambiguous")
@@ -20,10 +27,97 @@ pub fn register_command<'a> (app: App<'a, 'a>) -> App<'a, 'a> {
             .long("pretty-print")
             .help("Displays the solved puzzles nicely")))
 }
-
+/*
 pub fn execute (matches: &ArgMatches) -> Result<(),Box<dyn Error>> {
     if let Some(matches) = matches.subcommand_matches("encode") {
-        read_lines
+        let lines = read_lines("/home/edave/CLionProjects/ku/src/sudoku.csv")?;
+
+        let mut unsolved_compressed: Vec<usize> = vec![];
+        let mut solved_compressed: Vec<usize> = vec![];
+
+        for line in lines.skip(1) {
+            if line.is_err() { continue; }
+            if let Some((unsolved, solved)) = line?.split_once(",") {
+                let encoded = simple::encode(unsolved);
+                unsolved_compressed.push(encoded.len());
+                let decoded = simple::decode(encoded);
+                if decoded != unsolved {
+                    panic!("Nooooo!!!!")
+                }
+
+                let encoded = simple::encode(solved);
+                solved_compressed.push(encoded.len());
+                let decoded = simple::decode(encoded);
+                if decoded != solved {
+                    panic!("Nooooo!!!!")
+                }
+            }
+        }
+
+        print_stats("Solved", solved_compressed);
+        print_stats("Unsolved", unsolved_compressed);
+    }
+    Ok(())
+}
+*/
+pub fn execute (matches: &ArgMatches) -> Result<(),Box<dyn Error>> {
+    if let Some(matches) = matches.subcommand_matches("encode") {
+        let lines = read_lines("/home/edave/CLionProjects/ku/src/sudoku.csv")?;
+
+        let mut hole_occurrences: HashMap<usize, u64> = HashMap::new();
+        //let mut chain_occurrences: HashMap<usize, u64> = HashMap::new();
+
+        for line in lines.skip(1) {
+            if line.is_err() { continue; }
+            if let Some((unsolved, solved)) = line?.split_once(",") {
+                let mut hole_size = 0;
+                let mut chain_size = 0;
+                for char in unsolved.chars() {
+                    if char == '0' {
+                        if chain_size > 0 {
+                            //*chain_occurrences.entry(chain_size).or_insert(0) += 1;
+                            chain_size = 0;
+                        }
+                        hole_size += 1;
+                    } else {
+                        if chain_size != 0 {
+                            *hole_occurrences.entry(0).or_insert(0) += 1;
+                        }
+                        if hole_size > 0 {
+                            *hole_occurrences.entry(hole_size).or_insert(0) += 1;
+                            hole_size = 0;
+                        }
+                        chain_size += 1;
+                    }
+                }
+                if hole_size > 0 {
+                    *hole_occurrences.entry(hole_size).or_insert(0) += 1;
+                    hole_size = 0;
+                }
+            }
+        }
+
+        let mut keys: Vec<usize> = hole_occurrences.keys().map(|&x| x).collect();
+        keys.sort();
+
+        let mut total = 0;
+        for key in keys.clone() {
+            total += hole_occurrences[&key];
+        }
+
+
+        println!("Holes");
+        for key in keys {
+            println!("[{}]: {}", key, hole_occurrences[&key] as f64 / total as f64);
+        }
+        println!();
+/*
+        let mut keys: Vec<usize> = chain_occurrences.keys().map(|&x| x).collect();
+        keys.sort();
+        println!("Chain");
+        for key in keys {
+            println!("[{}]: {}", key, chain_occurrences[&key]);
+        }*/
     }
     Ok(())
 }
@@ -52,8 +146,7 @@ fn average(numbers: &[usize]) -> f32 {
 fn median(numbers: &[usize]) -> i32 {
     let mut clone = numbers.to_owned();
     clone.sort_unstable();
-    let mid = numbers.len() / 2;
-    clone[mid] as i32
+    clone[clone.len() / 2] as i32
 }
 
 fn mode(numbers: &[usize]) -> i32 {

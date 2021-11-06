@@ -1,7 +1,7 @@
 use std::fmt;
 use std::ops::Index;
 use crate::solver::board::CellState::{Solved, Unsolved};
-use crate::solver::calc::{block_of, Cell, col_of, number_to_mask, row_of};
+use crate::solver::calc::{Cell, number_to_mask};
 use crate::errors::{ContradicoryAssignmentError, UnsolvableError};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -108,7 +108,7 @@ impl Board {
 
     pub fn first_unsolved(&self) -> Option<Cell> {
         for i in 0..81 {
-            if let Unsolved(possibilities) = self.state[i] {
+            if let Unsolved(_) = self.state[i] {
                 return Some(Cell(i as u8));
             }
         }
@@ -134,9 +134,9 @@ impl Board {
                 if possibilies.mask & value_mask > 0 {
                     let mask_away = value_mask ^ 0xFFFF;
                     self.state[cell.0 as usize] = Solved(val);
-                    let a = self.mark_of_cells(mask_away, row_of(cell).into_iter());
-                    let b = self.mark_of_cells(mask_away, col_of(cell).into_iter());
-                    let c = self.mark_of_cells(mask_away, block_of(cell).into_iter());
+                    let a = self.mark_of_cells(mask_away, cell.row().into_iter());
+                    let b = self.mark_of_cells(mask_away, cell.col().into_iter());
+                    let c = self.mark_of_cells(mask_away, cell.block().into_iter());
                     if a.is_err() || b.is_err() || c.is_err() {
                         return Err(ContradicoryAssignmentError {
                             target: cell,

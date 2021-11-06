@@ -11,13 +11,40 @@ pub struct Col(pub u8);
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub struct Block(pub u8);
 
+pub trait House : IntoIterator<Item = Cell, IntoIter = IntoIter<Cell>> {
+    fn start (self) -> Cell;
+}
+
+impl Cell {
+    pub fn row (self) -> Row {
+        Row(self.0 / 9)
+    }
+
+    pub fn col (self) -> Col {
+        Col(self.0 % 9)
+    }
+
+    pub fn block (self) -> Block {
+        let Row(row) = self.row();
+        let Col(col) = self.col();
+
+        Block(row / 3 * 3 + col / 3)
+    }
+}
+
 impl IntoIterator for Row {
     type Item = Cell;
     type IntoIter = IntoIter<Cell>;
 
     fn into_iter(self) -> Self::IntoIter {
-        let start = start_of_row(self).0;
+        let start = self.start().0;
         (start..(start + 9)).into_iter().map(Cell).collect::<Vec<Cell>>().into_iter()
+    }
+}
+
+impl House for Row {
+    fn start (self) -> Cell {
+        Cell(self.0 * 9)
     }
 }
 
@@ -26,8 +53,14 @@ impl IntoIterator for Col {
     type IntoIter = IntoIter<Cell>;
 
     fn into_iter(self) -> Self::IntoIter {
-        let start = start_of_col(self).0;
+        let start = self.start().0;
         (0..9).into_iter().map(|x| Cell(start + x * 9)).collect::<Vec<Cell>>().into_iter()
+    }
+}
+
+impl House for Col {
+    fn start (self) -> Cell {
+        Cell(self.0)
     }
 }
 
@@ -36,7 +69,7 @@ impl IntoIterator for Block {
     type IntoIter = IntoIter<Cell>;
 
     fn into_iter(self) -> Self::IntoIter {
-        let start = start_of_block(self).0;
+        let start = self.start().0;
         (0..9).into_iter().map(|x| {
             let block_row = x / 3;
             let block_col = x % 3;
@@ -45,28 +78,10 @@ impl IntoIterator for Block {
     }
 }
 
-pub fn row_of (cell: Cell) -> Row {
-    Row(cell.0 / 9)
-}
-
-pub fn start_of_row (row: Row) -> Cell {
-    Cell(row.0 * 9)
-}
-
-pub fn col_of (cell: Cell) -> Col {
-    Col(cell.0 % 9)
-}
-
-pub fn start_of_col (col: Col) -> Cell {
-    Cell(col.0)
-}
-
-pub fn block_of (cell: Cell) -> Block {
-    Block(row_of(cell).0 / 3 * 3 + col_of(cell).0 / 3)
-}
-
-pub fn start_of_block (block: Block) -> Cell {
-    Cell(block.0 / 3 * 27 + block.0 % 3 * 3)
+impl House for Block {
+    fn start (self) -> Cell {
+        Cell(self.0 / 3 * 27 + self.0 % 3 * 3)
+    }
 }
 
 pub fn number_to_mask (num: u8) -> u16 {
@@ -78,7 +93,7 @@ impl fmt::Display for Cell {
         if self.0 > 80 {
             write!(f, "Cell[Impossible Position]")
         } else {
-            write!(f, "Cell[Col: {}, Row: {}]", col_of(*self).0, row_of(*self).0)
+            write!(f, "Cell[Col: {}, Row: {}]", self.col().0, self.row().0)
         }
     }
 }
