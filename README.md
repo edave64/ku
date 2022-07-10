@@ -23,15 +23,27 @@ Takes a difficulty level and generates a new puzzle
 
 ### encode
 
-(Not implemented yet)
+Encodes a given puzzle in a compressed base64 format for easier exchange with others.
+This format has a variable length, and is a lot more efficient for unsolved sudokus, but still
+always smaller than the traditional 81 character strings.
 
-Encodes a given puzzle in a compressed format for easier exchange with others
+```
+> ku encode 900800000000000500000000000020010003010000060000400070708600000000030100400000200
+mo_F_SobMB1sS3BwhvowGk0q
+> ku encode 972853614146279538583146729624718953817395462359462871798621345265934187431587296
+lyhTYUFGJ5U4WDFGcpYkcYlTgXOVRiNZRihxeYYhNFJlk0GHQxWHKWA
+```
 
 ### decode
 
-(Not implemented yet)
+Decodes a given puzzle from a compressed base64 format to a simple series of numbers
 
-Decodes a given puzzle from a compressed format to a simple series of numbers
+```
+> ku decode mo_F_SobMB1sS3BwhvowGk0q
+900800000000000500000000000020010003010000060000400070708600000000030100400000200
+> ku decode lyhTYUFGJ5U4WDFGcpYkcYlTgXOVRiNZRihxeYYhNFJlk0GHQxWHKWA
+972853614146279538583146729624718953817395462359462871798621345265934187431587296
+```
 
 ### play
 

@@ -3,6 +3,7 @@ use std::ops::Index;
 use crate::solver::board::CellState::{Solved, Unsolved};
 use crate::solver::calc::{Cell, number_to_mask};
 use crate::errors::{ContradicoryAssignmentError, UnsolvableError};
+use std::fmt::Write;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct Possibilities {
@@ -52,7 +53,7 @@ impl Board {
         for i in 0..81 {
             let val = self.state[i];
             if let Solved(num) = val {
-                a.push_str(&*format!("{}", num + 1));
+                write!(a, "{}", num + 1).unwrap();
             } else {
                 a.push('0');
             }

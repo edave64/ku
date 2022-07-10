@@ -1,7 +1,7 @@
 use std::error::Error;
 use clap::{App, Arg, ArgMatches, SubCommand};
-use crate::errors::{InvalidPuzzleError, UnsolvableError};
-use crate::solver::board::Board;
+use crate::commands::parse_puzzle;
+use crate::errors::{UnsolvableError};
 use crate::solver::solve::solve;
 
 pub fn register_command<'a> (app: App<'a, 'a>) -> App<'a, 'a> {
@@ -10,7 +10,7 @@ pub fn register_command<'a> (app: App<'a, 'a>) -> App<'a, 'a> {
         .arg(Arg::with_name("puzzles")
             .required(true)
             .multiple(true)
-            .help("ASD"))
+            .help("The puzzles to solve"))
         .arg(Arg::with_name("unambiguous")
             .short("u")
             .long("unambiguous")
@@ -41,11 +41,4 @@ pub fn execute (matches: &ArgMatches) -> Result<(),Box<dyn Error>> {
         }
     }
     Ok(())
-}
-
-fn parse_puzzle (puzzle: &str) -> Result<Board, Box<dyn Error>> {
-    let ret: Vec<u8> = puzzle.chars().map(| x | x.to_digit(10).map(|x| x as u8).unwrap_or(0)).collect();
-    if ret.len() != 81 { return Err(Box::new(InvalidPuzzleError {})) }
-    let board = Board::from_puzzle(ret)?;
-    Ok(board)
 }

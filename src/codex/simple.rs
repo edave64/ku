@@ -73,7 +73,7 @@ pub fn decode(coded: Vec<u8>) -> String {
 
     fn push_nibble (ret: &mut String, nibble: u8) {
         match nibble {
-            0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 => ret.push_str(&*format!("{}", nibble)),
+            0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 => ret.push_str(&format!("{}", nibble)),
             x => ret.push_str("0".repeat((x - 8) as usize).as_str())
         }
     }

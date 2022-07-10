@@ -1,6 +1,6 @@
 [package]
 name = "ku"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2018"
 authors = ["edave64"]
 license-file = "LICENCE"
@@ -16,3 +16,4 @@ lto = true
 
 [dependencies]
 clap = "2.33.3"
+base64 = "0.13.0"
