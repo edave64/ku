@@ -9,7 +9,7 @@ mod tools;
 
 fn main () -> Result<(), Box<dyn Error>> {
     let mut app = App::new("ku")
-        .version("1.0")
+        .version("0.1")
         .author("edave64 <edave64@gmail.com>")
         .about("A sudoku game/toolkit");
 
