@@ -10,7 +10,7 @@ mod tools;
 fn main () -> Result<(), Box<dyn Error>> {
     let mut app = App::new("ku")
         .version("1.0")
-        .author("Kevin K. <kbknapp@gmail.com>")
+        .author("edave64 <edave64@gmail.com>")
         .about("A sudoku game/toolkit");
 
     app = commands::solve::register_command(app);
