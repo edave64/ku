@@ -2,9 +2,9 @@ use clap::App;
 use std::error::Error;
 
 mod codex;
-mod solver;
-mod errors;
 mod commands;
+mod errors;
+mod solver;
 mod tools;
 
 fn main() -> Result<(), Box<dyn Error>> {

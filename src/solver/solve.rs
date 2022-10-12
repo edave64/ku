@@ -1,4 +1,4 @@
-use crate::errors::{NonUniqueError};
+use crate::errors::NonUniqueError;
 use crate::solver::board::Board;
 use crate::solver::calc::number_to_mask;
 
@@ -11,7 +11,9 @@ pub fn solve(board: Board, prove_unique: bool) -> Result<Option<Board>, NonUniqu
             for i in (0..9).filter(|&i| possibilities.mask & number_to_mask(i) > 0) {
                 let mut new_board = board.clone();
                 let marking = new_board.mark(next_cell, i);
-                if marking.is_err() { continue; }
+                if marking.is_err() {
+                    continue;
+                }
 
                 match solve(new_board, prove_unique)? {
                     Some(solved_board) => {
@@ -34,4 +36,3 @@ pub fn solve(board: Board, prove_unique: bool) -> Result<Option<Board>, NonUniqu
 
     Ok(None)
 }
-

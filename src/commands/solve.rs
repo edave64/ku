@@ -26,7 +26,7 @@ pub fn register_command<'a>(app: App<'a, 'a>) -> App<'a, 'a> {
                     .help("Test the puzzle for ambiguity"),
             )
             .arg(
-                    Arg::with_name(PRETTY)
+                Arg::with_name(PRETTY)
                     .short("p")
                     .long("pretty-print")
                     .help("Displays the solved puzzles nicely"),

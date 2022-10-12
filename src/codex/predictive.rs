@@ -1,8 +1,8 @@
-use std::error::Error;
 use crate::errors::UnsolvableError;
 use crate::solver::board::Board;
 use crate::solver::solve::solve;
 use crate::tools::{BitReader, BitWriter};
+use std::error::Error;
 
 struct PredictorBoard {
     board: [u8; 81],
@@ -18,8 +18,10 @@ impl PredictorBoard {
         let col = i % 9;
         let block = (row / 27) * 27 + col / 3 * 3;
 
-        fn mask (val: u8) -> u16 {
-            if val == 0 { return 0 };
+        fn mask(val: u8) -> u16 {
+            if val == 0 {
+                return 0;
+            };
             1 << (val - 1)
         }
 
@@ -36,7 +38,10 @@ impl PredictorBoard {
             out_mask |= mask(col_val) | mask(row_val) | mask(block_val);
         }
 
-        (1..10).into_iter().filter(|&x| (out_mask & mask(x)) == 0).collect()
+        (1..10)
+            .into_iter()
+            .filter(|&x| (out_mask & mask(x)) == 0)
+            .collect()
     }
 
     fn set(&mut self, i: u8, val: u8) {
@@ -67,18 +72,19 @@ pub fn pattern_c16(i: u8) -> u8 {
 const HOLE_ENCODE_BITS: u8 = 3;
 const HOLE_ENCODE_MAX: u8 = 2u32.pow((HOLE_ENCODE_BITS - 1) as u32) as u8;
 const CHAIN_ENCODE_BITS: u8 = 1;
-const CHAIN_ENCODE_MAX: u8 = 1 as u8;
+const CHAIN_ENCODE_MAX: u8 = 1_u8;
 
 pub fn encode(string: &str) -> Result<Vec<u8>, Box<dyn Error>> {
-    let nums: Vec<u8> = string.chars().map( |x| x.to_digit(10).unwrap() as u8).collect();
-    let holes: Vec<bool> = nums.iter().map(|&num| { num == 0 }).collect();
-    let solved = solve(Board::from_puzzle(nums.clone())?, false)?;
+    let nums: Vec<u8> = string
+        .chars()
+        .map(|x| x.to_digit(10).unwrap() as u8)
+        .collect();
+    let holes: Vec<bool> = nums.iter().map(|&num| num == 0).collect();
+    let solved = solve(Board::from_puzzle(nums)?, false)?;
     if let Some(solved) = solved {
         let solved_nums = solved.to_nums();
 
-        let mut board = PredictorBoard {
-            board: [0u8; 81]
-        };
+        let mut board = PredictorBoard { board: [0u8; 81] };
 
         let mut writer = BitWriter::new();
 
@@ -86,15 +92,18 @@ pub fn encode(string: &str) -> Result<Vec<u8>, Box<dyn Error>> {
             let real_i = pattern_linear(i);
             let num = solved_nums[real_i as usize];
             let probabilies = board.possibilities(real_i);
-            let idx = probabilies.iter().position(|&x| x == num).expect("Impossible puzzle to encode") as u8;
+            let idx = probabilies
+                .iter()
+                .position(|&x| x == num)
+                .expect("Impossible puzzle to encode") as u8;
 
             match probabilies.len() {
                 9 => writer.write(idx, 4),
                 5..=8 => writer.write(idx, 3),
                 3 | 4 => writer.write(idx, 2),
                 2 => writer.write(idx, 1),
-                1 => {},
-                _ => panic!("Encoding of broken puzzle!")
+                1 => {}
+                _ => panic!("Encoding of broken puzzle!"),
             }
 
             board.set(real_i, num);
@@ -112,13 +121,19 @@ pub fn encode(string: &str) -> Result<Vec<u8>, Box<dyn Error>> {
                 }
                 hole_length += 1;
                 if hole_length >= HOLE_ENCODE_MAX {
-                    writer.write((hole_length - 1) | 1 << (HOLE_ENCODE_BITS - 1), HOLE_ENCODE_BITS);
+                    writer.write(
+                        (hole_length - 1) | 1 << (HOLE_ENCODE_BITS - 1),
+                        HOLE_ENCODE_BITS,
+                    );
                     hole_length = 0;
                 }
             } else {
                 //writer.write(0, 1);
                 if hole_length > 0 {
-                    writer.write((hole_length - 1) | 1 << (HOLE_ENCODE_BITS - 1), HOLE_ENCODE_BITS);
+                    writer.write(
+                        (hole_length - 1) | 1 << (HOLE_ENCODE_BITS - 1),
+                        HOLE_ENCODE_BITS,
+                    );
                     if hole_length < HOLE_ENCODE_MAX {
                         hole_length = 0;
                         // The hole wasn't as large as it could have been, so a the next field can't be a hole
@@ -134,7 +149,10 @@ pub fn encode(string: &str) -> Result<Vec<u8>, Box<dyn Error>> {
             }
         }
         if hole_length > 0 {
-            writer.write((hole_length - 1) | 1 << (HOLE_ENCODE_BITS - 1), HOLE_ENCODE_BITS);
+            writer.write(
+                (hole_length - 1) | 1 << (HOLE_ENCODE_BITS - 1),
+                HOLE_ENCODE_BITS,
+            );
             hole_length = 0;
         }
         Ok(writer.disolve_drop_zeros())
@@ -146,9 +164,7 @@ pub fn encode(string: &str) -> Result<Vec<u8>, Box<dyn Error>> {
 pub fn decode(coded: Vec<u8>) -> String {
     let mut reader = BitReader::new(coded);
 
-    let mut board = PredictorBoard {
-        board: [0u8; 81]
-    };
+    let mut board = PredictorBoard { board: [0u8; 81] };
 
     for i in 0..81 {
         let real_i = pattern_linear(i);
@@ -159,7 +175,7 @@ pub fn decode(coded: Vec<u8>) -> String {
             3 | 4 => reader.read(2),
             2 => reader.read(1),
             1 => 0,
-            _ => panic!("Encoding of broken puzzle!")
+            _ => panic!("Encoding of broken puzzle!"),
         } as usize;
 
         let num = possiblities[decoded];
@@ -173,7 +189,7 @@ pub fn decode(coded: Vec<u8>) -> String {
         let is_hole = reader.read(1) == 1;
         if is_hole {
             let hole_size = reader.read(HOLE_ENCODE_BITS - 1) + 1;
-            for i in 0..hole_size {
+            for _ in 0..hole_size {
                 board.set(pos, 0);
                 pos += 1;
             }
@@ -184,7 +200,9 @@ pub fn decode(coded: Vec<u8>) -> String {
         } else {
             pos += 1;
         }
-        if pos >= 81 { break; }
+        if pos >= 81 {
+            break;
+        }
     }
     /*
     for pos in 0..81 {

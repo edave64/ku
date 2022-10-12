@@ -1,9 +1,9 @@
-use std::fmt;
-use std::ops::Index;
-use crate::solver::board::CellState::{Solved, Unsolved};
-use crate::solver::calc::{Cell, number_to_mask};
 use crate::errors::{ContradicoryAssignmentError, UnsolvableError};
+use crate::solver::board::CellState::{Solved, Unsolved};
+use crate::solver::calc::{number_to_mask, Cell};
+use std::fmt;
 use std::fmt::Write;
+use std::ops::Index;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct Possibilities {
@@ -39,7 +39,7 @@ impl Board {
             if given != 0 {
                 let mark_err = board.mark(Cell((i) as u8), given - 1).is_err();
                 if mark_err {
-                    return Err(UnsolvableError {})
+                    return Err(UnsolvableError {});
                 }
             }
         }
@@ -47,7 +47,7 @@ impl Board {
         Ok(board)
     }
 
-    pub fn to_1d_string (&self) -> String {
+    pub fn to_1d_string(&self) -> String {
         let mut a = String::new();
 
         for i in 0..81 {
@@ -62,7 +62,7 @@ impl Board {
         a
     }
 
-    pub fn to_nums (&self) -> Vec<u8> {
+    pub fn to_nums(&self) -> Vec<u8> {
         let mut a = Vec::new();
 
         for i in 0..81 {
@@ -85,10 +85,7 @@ impl Board {
     pub fn most_certain(&self) -> Option<(Cell, Possibilities)> {
         let mut most_certain = 255u8;
         let mut most_certain_count = 255u8;
-        let mut ret_possibilities = Possibilities {
-            count: 0,
-            mask: 0,
-        };
+        let mut ret_possibilities = Possibilities { count: 0, mask: 0 };
 
         for i in 0..81 {
             if let Unsolved(possibilities) = self.state[i] {
@@ -127,7 +124,7 @@ impl Board {
                         target: cell,
                         attempted_val: val,
                         solved_val: Some(already_marked),
-                    })
+                    });
                 }
             }
             Unsolved(possibilies) => {
@@ -143,21 +140,25 @@ impl Board {
                             target: cell,
                             attempted_val: val,
                             solved_val: None,
-                        })
+                        });
                     }
                 } else {
                     return Err(ContradicoryAssignmentError {
                         target: cell,
                         attempted_val: val,
                         solved_val: None,
-                    })
+                    });
                 }
             }
         }
         Ok(val)
     }
 
-    pub fn mark_of_cells<T: Iterator<Item=Cell>>(&mut self, mask_off: u16, iter: T) -> Result<(), ()> {
+    pub fn mark_of_cells<T: Iterator<Item = Cell>>(
+        &mut self,
+        mask_off: u16,
+        iter: T,
+    ) -> Result<(), ()> {
         for same_row_cell in iter {
             if let Unsolved(mut row_possibilities) = self.state[same_row_cell.0 as usize] {
                 row_possibilities.mask &= mask_off;

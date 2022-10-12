@@ -1,4 +1,4 @@
 pub mod board;
-pub mod precalc;
 pub mod calc;
+pub mod precalc;
 pub mod solve;

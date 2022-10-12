@@ -2,7 +2,11 @@ use std::iter::Peekable;
 
 #[allow(dead_code)]
 pub fn encode(string: &str) -> Vec<u8> {
-    let mut iter = string.chars().map( |x| x.to_digit(10).unwrap() as u8).into_iter().peekable();
+    let mut iter = string
+        .chars()
+        .map(|x| x.to_digit(10).unwrap() as u8)
+        .into_iter()
+        .peekable();
 
     let mut ret: Vec<u8> = vec![];
 
@@ -24,7 +28,7 @@ pub fn encode(string: &str) -> Vec<u8> {
     ret
 }
 
-fn encode_single<T: Iterator<Item=u8>>(iter: &mut Peekable<T>) -> Option<u8> {
+fn encode_single<T: Iterator<Item = u8>>(iter: &mut Peekable<T>) -> Option<u8> {
     let num = iter.next();
     match num {
         None => None,
@@ -47,7 +51,7 @@ fn encode_single<T: Iterator<Item=u8>>(iter: &mut Peekable<T>) -> Option<u8> {
                 }
                 match zerocount {
                     1 => Some(0),
-                    x => Some(9 + x - 1)
+                    x => Some(9 + x - 1),
                 }
             } else {
                 Some(x)
@@ -58,23 +62,28 @@ fn encode_single<T: Iterator<Item=u8>>(iter: &mut Peekable<T>) -> Option<u8> {
 
 #[allow(dead_code)]
 pub fn trivial_encode(string: &str) -> Vec<u8> {
-    let nums: Vec<u8> = string.chars().map( |x| x.to_digit(10).unwrap() as u8).collect();
-    nums.chunks(2).map( { |pair|
-        match pair {
-            [x, y] => (x << 4 | y),
-            [x] => (x << 4),
-            _ => panic!("Toast"),
-        }
-    } ).collect()
+    let nums: Vec<u8> = string
+        .chars()
+        .map(|x| x.to_digit(10).unwrap() as u8)
+        .collect();
+    nums.chunks(2)
+        .map({
+            |pair| match pair {
+                [x, y] => (x << 4 | y),
+                [x] => (x << 4),
+                _ => panic!("Toast"),
+            }
+        })
+        .collect()
 }
 
 pub fn decode(coded: Vec<u8>) -> String {
     let mut ret = String::with_capacity(81);
 
-    fn push_nibble (ret: &mut String, nibble: u8) {
+    fn push_nibble(ret: &mut String, nibble: u8) {
         match nibble {
             0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 => ret.push_str(&format!("{}", nibble)),
-            x => ret.push_str("0".repeat((x - 8) as usize).as_str())
+            x => ret.push_str("0".repeat((x - 8) as usize).as_str()),
         }
     }
 
@@ -83,8 +92,10 @@ pub fn decode(coded: Vec<u8>) -> String {
         let second = byte & 0x0F;
 
         push_nibble(&mut ret, first);
-        if ret.len() >= 81 { break }
-        push_nibble(&mut ret,second);
+        if ret.len() >= 81 {
+            break;
+        }
+        push_nibble(&mut ret, second);
     }
 
     ret

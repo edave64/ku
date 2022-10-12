@@ -1,6 +1,6 @@
+use crate::solver::calc::Cell;
 use std::error::Error;
 use std::fmt;
-use crate::solver::calc::Cell;
 
 #[derive(Debug, Clone)]
 pub struct ContradicoryAssignmentError {
@@ -14,10 +14,18 @@ impl Error for ContradicoryAssignmentError {}
 impl fmt::Display for ContradicoryAssignmentError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if let Some(solved) = self.solved_val {
-            write!(f, "Attempt to write {} to cell {}, but it already has a determined value {}", self.attempted_val, self.target, solved)?;
+            write!(
+                f,
+                "Attempt to write {} to cell {}, but it already has a determined value {}",
+                self.attempted_val, self.target, solved
+            )?;
             Ok(())
         } else {
-            write!(f, "Attempt to write {} to cell {}, but that value was already excluded", self.attempted_val, self.target)?;
+            write!(
+                f,
+                "Attempt to write {} to cell {}, but that value was already excluded",
+                self.attempted_val, self.target
+            )?;
             Ok(())
         }
     }
